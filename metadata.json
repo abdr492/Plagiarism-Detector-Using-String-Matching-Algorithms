@@ -1,0 +1,8 @@
+{
+  "name": "Plagiarism Detector",
+  "description": "A high-performance full-stack plagiarism detection dashboard combining Knuth-Morris-Pratt (KMP), Rabin–Karp, Winnowing (MOSS), Jaccard similarity, and Gemini-based semantic grounding to detect exact matches and paraphrasing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,14 @@
+# Project Dependencies
+# This is an Angular/Node.js project. Dependencies are managed via npm and package.json
+# Key packages installed via npm include:
+
+@angular/core@^21.0.0
+@angular/forms@^21.0.0
+@angular/router@^21.0.0
+@angular/material@^21.0.0
+@google/genai@^2.4.0
+express@^5.1.0
+rxjs@~7.8.0
+tailwindcss@^4.1.12
+
+# To install all dependencies, run: npm install

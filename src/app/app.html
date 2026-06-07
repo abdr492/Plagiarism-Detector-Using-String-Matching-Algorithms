@@ -1,0 +1,1391 @@
+<div [class]="'min-h-screen font-sans flex flex-col md:flex-row ' + getThemeClasses()" id="plag-workspace">
+  
+  <!-- ========================================== -->
+  <!-- SIDEBAR NAVIGATION -->
+  <!-- ========================================== -->
+  <aside class="w-full md:w-80 bg-[#0F172A] text-white flex flex-col border-b md:border-b-0 md:border-r border-slate-800 justify-between shrink-0" id="sidebar-panel">
+    <div>
+      <!-- Header Logo / Title -->
+      <div class="p-6 border-b border-slate-800/60 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-650 flex items-center justify-center shadow-md shadow-indigo-500/10">
+          <mat-icon class="text-white">fingerprint</mat-icon>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white">PlagDetect</h1>
+          <p class="text-xs text-slate-400 font-medium">Smart Writing Scanner</p>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="p-4 space-y-1.5">
+        <button 
+          (click)="activeTab.set('detect')"
+          [class]="activeTab() === 'detect' ? 'w-full flex items-center gap-3 px-4 py-3 bg-indigo-600/15 text-indigo-455 rounded-xl font-medium border-l-4 border-indigo-500 transition-all duration-150' : 'w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800/30 rounded-xl font-medium border-l-4 border-transparent transition-all duration-150'"
+          id="nav-detect">
+          <mat-icon class="text-xl">compare_arrows</mat-icon>
+          <span>Compare Documents</span>
+        </button>
+
+        <!-- Access only if we have a report, or click to analyze -->
+        <button 
+          (click)="activeTab.set('analysis')"
+          [class]="activeTab() === 'analysis' ? 'w-full flex items-center gap-3 px-4 py-3 bg-indigo-600/15 text-indigo-455 rounded-xl font-medium border-l-4 border-indigo-500 transition-all duration-150' : 'w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800/30 rounded-xl font-medium border-l-4 border-transparent transition-all duration-150'"
+          id="nav-analysis">
+          <div class="relative">
+            <mat-icon class="text-xl">donut_large</mat-icon>
+            @if (scanResult()) {
+              <span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-indigo-500"></span>
+            }
+          </div>
+          <span>Report Dashboard</span>
+        </button>
+
+        <button 
+          (click)="activeTab.set('bulk')"
+          [class]="activeTab() === 'bulk' ? 'w-full flex items-center gap-3 px-4 py-3 bg-indigo-600/15 text-indigo-455 rounded-xl font-medium border-l-4 border-indigo-500 transition-all duration-150' : 'w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800/30 rounded-xl font-medium border-l-4 border-transparent transition-all duration-150'"
+          id="nav-bulk">
+          <mat-icon class="text-xl">folder_zip</mat-icon>
+          <span>Bulk Scan Queue</span>
+        </button>
+
+        <button 
+          (click)="activeTab.set('repository')"
+          [class]="activeTab() === 'repository' ? 'w-full flex items-center gap-3 px-4 py-3 bg-indigo-600/15 text-indigo-455 rounded-xl font-medium border-l-4 border-indigo-500 transition-all duration-150' : 'w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800/30 rounded-xl font-medium border-l-4 border-transparent transition-all duration-150'"
+          id="nav-repository">
+          <mat-icon class="text-xl">dns</mat-icon>
+          <span>Index Repository</span>
+        </button>
+
+        <button 
+          (click)="activeTab.set('reports')"
+          [class]="activeTab() === 'reports' ? 'w-full flex items-center gap-3 px-4 py-3 bg-indigo-600/15 text-indigo-455 rounded-xl font-medium border-l-4 border-indigo-500 transition-all duration-150' : 'w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800/30 rounded-xl font-medium border-l-4 border-transparent transition-all duration-150'"
+          id="nav-reports">
+          <mat-icon class="text-xl">history</mat-icon>
+          <span>Report Archive</span>
+        </button>
+
+        <button 
+          (click)="activeTab.set('overview')"
+          [class]="activeTab() === 'overview' ? 'w-full flex items-center gap-3 px-4 py-3 bg-indigo-600/15 text-indigo-450 rounded-xl font-medium border-l-4 border-indigo-500 transition-all duration-150' : 'w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800/30 rounded-xl font-medium border-l-4 border-transparent transition-all duration-150'"
+          id="nav-overview">
+          <mat-icon class="text-xl">info_outline</mat-icon>
+          <span>Engine Overview</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sidebar Bottom: Analysis Methods List -->
+    <div class="p-4 border-t border-slate-800 bg-slate-950/25 hidden md:block" id="complexity-guide">
+      <h2 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-3">Checking Methods</h2>
+      <div class="space-y-2 text-xs">
+        <div class="flex justify-between border-b border-slate-800 pb-1">
+          <span class="text-slate-400">Word-for-Word Copied</span>
+          <span class="text-emerald-400 font-semibold text-right">Exact Match</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-800 pb-1">
+          <span class="text-slate-400">Rearranged Sentences</span>
+          <span class="text-emerald-400 font-semibold text-right">Sequence Match</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-800 pb-1">
+          <span class="text-slate-400">Paraphrasy edits</span>
+          <span class="text-emerald-400 font-semibold text-right font-sans">Edit-Resilient</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-800 pb-1">
+          <span class="text-slate-400">Vocabulary Overlap</span>
+          <span class="text-emerald-400 font-semibold text-right">Set Check</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-800 pb-1">
+          <span class="text-slate-400">Subject context likeness</span>
+          <span class="text-emerald-400 font-semibold text-right">Core Subject</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-455">Sentence Reorganizing</span>
+          <span class="text-amber-400 font-semibold text-right">Line Match</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================== -->
+  <!-- MAIN CONTENT CONTAINER -->
+  <!-- ========================================== -->
+  <main class="flex-1 flex flex-col min-w-0" id="main-scroller">
+    
+    <!-- Top-Level Status Bar with Theme Toggles -->
+    <header class="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between shadow-xs gap-4 shrink-0" id="header-bar">
+      <!-- Status & Repo -->
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="text-xs font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md">STATUS: ONLINE</span>
+        <span class="text-xs bg-slate-100/50 border border-slate-200/60 px-2.5 py-1 rounded-md text-slate-500 hidden lg:block">Idx: <strong>{{ repositoryList().length }} Works</strong></span>
+      </div>
+
+      <!-- Theme Controls (Modes & Accents) -->
+      <div class="flex items-center gap-5 ml-auto">
+        <!-- Light/Dark Mode Switch -->
+        <button 
+          (click)="toggleMode()" 
+          title="Toggle Light/Dark Mode"
+          class="cursor-pointer p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-800 transition duration-150 flex items-center justify-center shadow-2xs"
+          id="btn-mode-toggle">
+          @if (themeMode() === 'light') {
+            <mat-icon class="text-lg">dark_mode</mat-icon>
+          } @else {
+            <mat-icon class="text-lg text-amber-400">light_mode</mat-icon>
+          }
+        </button>
+
+        <!-- Color Accent Swatches -->
+        <div class="flex items-center gap-1.5 p-1.5 rounded-xl border border-slate-200/80 bg-slate-50/50" id="preset-colors-picker">
+          <button 
+            (click)="setAccent('indigo')" 
+            title="Indigo Preset"
+            [class]="themeAccent() === 'indigo' ? 'w-5.5 h-5.5 rounded-full bg-indigo-600 border-2 border-white ring-2 ring-indigo-500 transition scale-110 cursor-pointer' : 'w-5 h-5 rounded-full bg-indigo-600 hover:scale-105 transition cursor-pointer'"
+            aria-label="Indigo pattern preset">
+          </button>
+          
+          <button 
+            (click)="setAccent('emerald')" 
+            title="Emerald Preset"
+            [class]="themeAccent() === 'emerald' ? 'w-5.5 h-5.5 rounded-full bg-emerald-600 border-2 border-white ring-2 ring-emerald-500 transition scale-110 cursor-pointer' : 'w-5 h-5 rounded-full bg-emerald-500 hover:scale-105 transition cursor-pointer'"
+            aria-label="Emerald design preset">
+          </button>
+
+          <button 
+            (click)="setAccent('violet')" 
+            title="Violet Preset"
+            [class]="themeAccent() === 'violet' ? 'w-5.5 h-5.5 rounded-full bg-violet-600 border-2 border-white ring-2 ring-violet-500 transition scale-110 cursor-pointer' : 'w-5 h-5 rounded-full bg-violet-500 hover:scale-105 transition cursor-pointer'"
+            aria-label="Violet trend preset">
+          </button>
+
+          <button 
+            (click)="setAccent('amber')" 
+            title="Amber Preset"
+            [class]="themeAccent() === 'amber' ? 'w-5.5 h-5.5 rounded-full bg-amber-600 border-2 border-white ring-2 ring-amber-500 transition scale-110 cursor-pointer' : 'w-5 h-5 rounded-full bg-amber-500 hover:scale-105 transition cursor-pointer'"
+            aria-label="Amber warm preset">
+          </button>
+
+          <button 
+            (click)="setAccent('rose')" 
+            title="Rose Preset"
+            [class]="themeAccent() === 'rose' ? 'w-5.5 h-5.5 rounded-full bg-rose-600 border-2 border-white ring-2 ring-rose-500 transition scale-110 cursor-pointer' : 'w-5 h-5 rounded-full bg-rose-500 hover:scale-105 transition cursor-pointer'"
+            aria-label="Rose elegant preset">
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT DISPLAY SWITCH -->
+    <div class="p-6 md:p-8 flex-1 overflow-y-auto max-w-7xl w-full mx-auto" id="active-space">
+      
+
+      <!-- ====================================      <!-- TAB 2: DETECT PLAGIARISM PANEL -->
+      <!-- ========================================== -->
+      @if (activeTab() === 'detect') {
+        <section class="space-y-6" id="detect-pane">
+          
+          <!-- Section Heading -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-205">
+            <div>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-800">Compare Documents</h2>
+              <p class="text-slate-505 text-xs">Scan two documents side-by-side for copied sentences, heavy rewrites, or web-matching sources.</p>
+            </div>
+            
+            <div class="flex gap-2">
+              <button (click)="loadSample('copied')" class="cursor-pointer bg-white hover:bg-slate-50 border border-slate-200 uppercase font-extrabold text-[10px] px-3 py-2 rounded-lg text-slate-700 shadow-xs transition">
+                📄 Load Copy Demo
+              </button>
+              <button (click)="loadSample('paraphrased')" class="cursor-pointer bg-white hover:bg-slate-50 border border-slate-200 uppercase font-extrabold text-[10px] px-3 py-2 rounded-lg text-slate-700 shadow-xs transition">
+                📄 Load Paraphrase Demo
+              </button>
+            </div>
+          </div>
+ 
+          <!-- Source Selector & Toggles -->
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="w-full md:w-auto space-y-1">
+              <span class="block text-xs font-mono text-slate-500">CHOOSE ORIGINAL REFERENCE DOCUMENT</span>
+              <div class="relative">
+                <select 
+                  [value]="selectedOriginalDocId()" 
+                  (change)="handleOriginalDocChange($any($event.target).value)"
+                  class="cursor-pointer bg-white text-slate-800 border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-medium w-full md:w-80 outline-none focus:border-indigo-500 shadow-xs">
+                  @for (repo of repositoryList(); track repo.id) {
+                    <option [value]="repo.id">{{ repo.title }} (By {{ repo.author }})</option>
+                  }
+                </select>
+              </div>
+            </div>
+ 
+            <!-- Deep Web Verification Toggles via Gemini -->
+            <div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <input 
+                  type="checkbox" 
+                  id="webCheck" 
+                  [checked]="runWebGrounding()" 
+                  (change)="runWebGrounding.set(!runWebGrounding())"
+                  class="cursor-pointer w-4 h-4 rounded text-indigo-600 bg-white border-slate-300 outline-none focus:ring-indigo-550">
+                <label for="webCheck" class="cursor-pointer text-xs font-semibold text-slate-700 flex items-center gap-2">
+                  <mat-icon class="text-indigo-650 text-lg">language</mat-icon>
+                  <span>Search Public Web Sources (Using AI)</span>
+                </label>
+              </div>
+              <p class="text-[10px] text-slate-500 pl-7 max-w-sm">Scans published articles, web pages, and scholarly sites to detect matches and provide real quote links.</p>
+            </div>
+          </div>
+
+          <!-- COMPARISON WORKSPACE -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="dual-comparer-grid">
+            
+            <!-- Target A: Original Read-Only or Paste -->
+            <div class="bg-white rounded-2xl border border-slate-200 flex flex-col shadow-sm">
+              <div class="p-4 border-b border-slate-205 flex justify-between items-center bg-slate-50/50">
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-emerald-650">verified_user</mat-icon>
+                  <h3 class="font-bold text-sm text-slate-750">Original Reference Document</h3>
+                </div>
+                <span class="text-xs font-mono text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-100">REFERENCE</span>
+              </div>
+              
+              <div class="p-5 flex-1 relative">
+                <p class="text-xs text-slate-500 font-semibold mb-2">TITLE: {{ comparedDocTitle() }}</p>
+                <textarea 
+                  [value]="originalText()"
+                  (input)="originalText.set($any($event.target).value)"
+                  placeholder="Paste or write original source material text here..."
+                  class="w-full h-80 bg-white text-slate-800 p-4 border border-slate-200 rounded-xl text-xs outline-none focus:border-indigo-500 font-mono resize-none leading-relaxed shadow-xs"
+                  id="original-textarea"></textarea>
+                
+                <div class="absolute bottom-6 right-8 text-[11px] text-slate-400 font-mono">
+                  Words: {{ originalText().split(' ').length }} | Chars: {{ originalText().length }}
+                </div>
+              </div>
+            </div>
+ 
+            <!-- Target B: Submitted Audit Material -->
+            <div class="bg-white rounded-2xl border border-slate-205 flex flex-col shadow-sm">
+              
+              <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-indigo-650">drive_file_rename_outline</mat-icon>
+                  <h3 class="font-bold text-sm text-slate-750">Your Submitted Draft</h3>
+                </div>
+                <span class="text-xs font-mono text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-100">CHECK TARGET</span>
+              </div>
+ 
+              <!-- Upload space & text input -->
+              <div class="p-5 flex-1 flex flex-col space-y-4">
+                
+                <!-- Silent drag-drop section -->
+                <div 
+                  (drop)="onFileDropped($event)" 
+                  (dragover)="onDragOver($event)"
+                  class="border-2 border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50 rounded-xl p-5 text-center transition flex flex-col items-center justify-center cursor-pointer relative"
+                  id="drop-zone-detect">
+                  <input 
+                    type="file" 
+                    id="detectFileInput" 
+                    (change)="onFileSelected($event)" 
+                    accept=".txt,.pdf,.docx"
+                    class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                  <mat-icon class="text-slate-400 mb-1.5 text-2xl">backup</mat-icon>
+                  <p class="text-[11px] font-semibold text-slate-750">Drag & Drop text, PDF or DOCX file</p>
+                  <p class="text-[9px] text-slate-450">Only plain characters read. Supports up to 10MB.</p>
+                </div>
+ 
+                <!-- Text field input -->
+                <div class="relative flex-1">
+                  <p class="text-xs text-slate-500 font-semibold mb-2">FILE NAME: {{ analyzedDocTitle() }}</p>
+                  <textarea 
+                    [value]="submittedText()"
+                    (input)="submittedText.set($any($event.target).value)"
+                    placeholder="Enter or paste student drafts, essay paragraphs, or thesis excerpts to check similarity stats..."
+                    class="w-full h-56 bg-white text-slate-800 p-4 border border-slate-200 rounded-xl text-xs outline-none focus:border-indigo-550 font-mono resize-none leading-relaxed shadow-xs"
+                    id="submitted-textarea"></textarea>
+                  
+                  <div class="absolute bottom-3 right-4 text-[11px] text-slate-400 font-mono">
+                    Words: {{ submittedText() ? submittedText().split(' ').length : 0 }} | Chars: {{ submittedText().length }}
+                  </div>
+                </div>           </div>
+
+              </div>
+            </div>
+
+           <!-- Bottom trigger panel -->
+          <div class="flex flex-col items-center py-6">
+            @if (comparisonError()) {
+              <div class="w-full max-w-xl bg-rose-50 border border-rose-200 text-rose-750 px-4 py-3 rounded-xl text-xs mb-4 flex items-center gap-2 shadow-xs">
+                <mat-icon>error_outline</mat-icon>
+                <span>{{ comparisonError() }}</span>
+              </div>
+            }
+ 
+            <button 
+              (click)="triggerComparison()"
+              [disabled]="isComparing() || submittedText().trim().length < 5"
+              class="cursor-pointer bg-gradient-to-r from-indigo-650 via-indigo-700 to-indigo-850 hover:brightness-105 text-white font-bold px-10 py-4 rounded-xl shadow-lg shadow-indigo-650/20 transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none flex items-center gap-3 text-sm tracking-wide"
+              id="analyze-heavy-btn">
+              
+              @if (isComparing()) {
+                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Analyzing Writing Style...</span>
+              } @else {
+                <mat-icon>youtube_searched_for</mat-icon>
+                <span>SCAN FOR SIMILARTIES NOW</span>
+              }
+            </button>
+            <p class="text-xs text-slate-500 mt-2 font-semibold">Checks for direct copy-pastes, minor edits, and paraphrased sections in seconds.</p>
+          </div>
+
+        </section>
+      }
+
+      <!-- ==============================      <!-- TAB 3: REPORT ANALYSIS DASHBOARD -->
+      <!-- ========================================== -->
+      @if (activeTab() === 'analysis') {
+        <section class="space-y-6" id="analysis-dashboard">
+          
+          <!-- Heading -->
+          <div class="flex justify-between items-center pb-4 border-b border-slate-200">
+            <div>
+              <span class="text-xs text-slate-600 font-mono bg-slate-100 border border-slate-200/80 px-2.5 py-1 rounded">SCAN COMPLETE</span>
+              <h2 class="text-2xl font-bold tracking-tight mt-1.5 text-slate-800">Writing Similarity Report</h2>
+              <p class="text-xs text-slate-500">A friendly breakdown of matching phrases, possible edits, and online source matches.</p>
+            </div>
+            <button (click)="activeTab.set('detect')" class="cursor-pointer bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl font-semibold text-xs text-slate-700 shadow-xs transition">
+              Start New Scan
+            </button>
+          </div>
+ 
+          @if (!scanResult()) {
+            <!-- Empty state fallback prompts scanning -->
+            <div class="text-center py-20 bg-white rounded-3xl border border-slate-200 space-y-4 max-w-2xl mx-auto my-8 shadow-xs">
+              <div class="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto text-slate-400">
+                <mat-icon class="text-3xl">query_stats</mat-icon>
+              </div>
+              <h3 class="text-lg font-bold text-slate-800">No Scan Session Checked</h3>
+              <p class="text-slate-500 text-xs px-8">You haven't run any similarity scans yet in this session. Go to the comparison tab, enter your texts, and click the scan button to view real-time results and references.</p>
+              <button (click)="activeTab.set('detect')" class="cursor-pointer bg-indigo-600 hover:bg-indigo-750 text-white font-semibold text-xs px-5 py-3 rounded-xl transition">
+                Open Comparison Tab
+              </button>
+            </div>
+          } @else {
+            <!-- Full dashboard visualization -->
+            <div class="space-y-6" id="dashboard-full-charts">
+              
+              <!-- TOP GRAPH GRID -->
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Card 1: Score Circle Gauge -->
+                <div class="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col items-center justify-between shadow-xs">
+                  <h3 class="text-xs font-mono font-bold text-slate-550 tracking-wider mb-4 text-center">SIMILARITY OVERLAP SCORE (%)</h3>
+                  
+                  <div class="relative w-44 h-44 flex items-center justify-center" id="score-gauge-svg">
+                    <svg class="w-full h-full rotate-[-90deg]">
+                      <!-- Underlay track ring -->
+                      <circle 
+                        cx="88" cy="88" r="80" 
+                        class="stroke-slate-100"
+                        stroke-width="12"
+                        fill="transparent" />
+                      <!-- Active indicator track -->
+                      <circle 
+                        cx="88" cy="88" r="80" 
+                        [class]="scanResult()!.overallScore > 40 ? 'stroke-rose-500 transition-all duration-1000 ease-out' : scanResult()!.overallScore > 15 ? 'stroke-amber-500 transition-all duration-1000 ease-out' : 'stroke-emerald-500 transition-all duration-1000 ease-out'"
+                        stroke-width="14"
+                        fill="transparent"
+                        stroke-linecap="round"
+                        [attr.stroke-dasharray]="2 * 3.14159 * 80"
+                        [attr.stroke-dashoffset]="gaugeDashOffset" />
+                    </svg>
+                    
+                    <!-- Center score metrics text -->
+                    <div class="absolute text-center space-y-0.5">
+                      <span class="text-4xl font-extrabold tracking-tighter text-slate-800 animate-pulse" id="score-val">{{ scanResult()?.overallScore }}%</span>
+                      <div class="text-[9px] uppercase font-extrabold px-2.5 py-0.5 rounded-full border"
+                        [ngClass]="scanResult()!.overallScore > 40 ? 'text-rose-700 bg-rose-50 border-rose-100' : scanResult()!.overallScore > 15 ? 'text-amber-700 bg-amber-50 border-amber-100' : 'text-emerald-700 bg-emerald-50 border-emerald-100'">
+                        {{ scanResult()!.overallScore > 40 ? 'High Similarity' : scanResult()!.overallScore > 15 ? 'Moderate Similarity' : 'Original Content' }}
+                      </div>
+                    </div>
+                  </div>
+ 
+                  <p class="text-[10px] text-slate-450 text-center mt-3 max-w-[200px]">Overall overlap calculated by analyzing exact copy-pastes and paraphrased sections.</p>
+                </div>
+ 
+                <!-- Card 2: Spider Web Radar Score Chart -->
+                <div class="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col items-center justify-between shadow-xs" id="radar-pane">
+                  <h3 class="text-xs font-mono font-bold text-slate-550 tracking-wider mb-2 text-center">DETECTION PATTERNS COMPARISON</h3>
+                  
+                  <div class="w-full max-w-[240px] aspect-square relative" id="radar-web-svg">
+                    <svg viewBox="0 0 300 300" class="w-full h-full">
+                      <!-- 1. Draw Concentric Grid circles at 20%, 40%, 60%, 80%, 100% -->
+                      @for (radius of [20, 40, 60, 80, 100]; track radius) {
+                        <circle cx="150" cy="150" [attr.r]="radius" class="stroke-slate-200 fill-none" stroke-width="1" />
+                      }
+ 
+                      <!-- 2. Draw Axes lines from center to outer radii -->
+                      @for (i of [0,1,2,3,4,5,6]; track i) {
+                        <!-- 7 axes because we have 7 key algorithms -->
+                        <!-- 7 directions: Winnowing, Rabin-Karp, KMP, LCS, Levenshtein, Jaccard, Cosine -->
+                        <line 
+                          x1="150" y1="150" 
+                          [attr.x2]="150 + 100 * Math.cos((i * 2 * Math.PI) / 7 - Math.PI / 2)" 
+                          [attr.y2]="150 + 100 * Math.sin((i * 2 * Math.PI) / 7 - Math.PI / 2)" 
+                          class="stroke-slate-200" 
+                          stroke-width="1" />
+                      }
+ 
+                      <!-- 3. Plot the active values polygon shape dynamically -->
+                      <polygon 
+                        [attr.points]="radarPoints" 
+                        class="fill-indigo-650/15 stroke-indigo-650" 
+                        stroke-width="2" />
+ 
+                      <!-- 4. Text labels at vertices -->
+                      <!-- Winnowing -->
+                      <text x="150" y="32" text-anchor="middle" class="fill-slate-500 font-semibold font-mono text-[9px]">Paraphrasing</text>
+                      <!-- Rabin-Karp -->
+                      <text x="248" y="110" text-anchor="start" class="fill-slate-500 font-semibold font-mono text-[9px]">Phrases Matching</text>
+                      <!-- KMP -->
+                      <text x="240" y="210" text-anchor="start" class="fill-slate-500 font-semibold font-mono text-[9px]">Exact Match</text>
+                      <!-- LCS -->
+                      <text x="175" y="278" text-anchor="start" class="fill-slate-500 font-semibold font-mono text-[9px]">Word Flow</text>
+                      <!-- Levenshtein -->
+                      <text x="125" y="278" text-anchor="end" class="fill-slate-500 font-semibold font-mono text-[9px]">Minor Edits</text>
+                      <!-- Jaccard -->
+                      <text x="60" y="210" text-anchor="end" class="fill-slate-500 font-semibold font-mono text-[9px]">Word Overlap</text>
+                      <!-- Cosine -->
+                      <text x="52" y="110" text-anchor="end" class="fill-slate-500 font-semibold font-mono text-[9px]">Topic Match</text>
+                    </svg>
+                  </div>
+ 
+                  <span class="text-[10px] text-slate-500 bg-slate-50 px-2.5 py-1 rounded border border-slate-200">Comparison across 7 match parameters</span>
+                </div>
+                        <!-- Card 3: Metrics Board & Speeds Benchmarks -->
+                <div class="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between shadow-xs" id="performance-pane">
+                  <h3 class="text-xs font-mono font-bold text-slate-500 tracking-wider mb-2.5">SCAN STATS & PERFORMANCE</h3>
+                  
+                  <!-- Basic counters -->
+                  <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+                      <span class="text-[10px] text-slate-500 uppercase font-bold font-mono">Scan Duration</span>
+                      <p class="text-lg font-extrabold text-emerald-600 mt-1">{{ scanResult()?.executionTimeMs }} <span class="text-xs font-normal text-slate-400">ms</span></p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+                      <span class="text-[10px] text-slate-500 uppercase font-bold font-mono">Lines Checked</span>
+                      <p class="text-lg font-extrabold text-slate-800 mt-1">{{ scanResult()?.sentencesAnalyzed }} lines</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+                      <span class="text-[10px] text-slate-500 uppercase font-bold font-mono">Matching Lines</span>
+                      <p class="text-lg font-extrabold text-rose-600 mt-1">{{ scanResult()?.plagiarizedSentencesCount }} lines</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+                      <span class="text-[10px] text-slate-500 uppercase font-bold font-mono">Reference Doc</span>
+                      <p class="text-xs font-bold text-slate-700 mt-1.5 truncate pr-1" title="{{ comparedDocTitle() }}">{{ comparedDocTitle() }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Speed Benchmarking (Naive vs Rabin-Karp vs KMP) -->
+                  <div class="space-y-2 text-xs">
+                    <span class="text-[10px] text-slate-500 uppercase font-bold font-mono">Scan engine speed comparison:</span>
+                    
+                    <!-- Line 1: Naive (Slowest) -->
+                    <div class="space-y-1">
+                      <div class="flex justify-between font-mono text-[10px]">
+                        <span class="text-slate-600">Standard Search</span>
+                        <span class="text-rose-600 font-bold">{{ benchmarkData().naive }} ms</span>
+                      </div>
+                      <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-rose-500 h-full rounded-full" [style.width.%]="100"></div>
+                      </div>
+                    </div>
+
+                    <!-- Line 2: Rabin-Karp -->
+                    <div class="space-y-1">
+                      <div class="flex justify-between font-mono text-[10px]">
+                        <span class="text-slate-600">Rolling Phrase Scanner</span>
+                        <span class="text-emerald-700 font-bold">{{ benchmarkData().rabinKarp }} ms</span>
+                      </div>
+                      <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-emerald-500 h-full rounded-full" [style.width.%]="Math.min(100, (benchmarkData().rabinKarp / benchmarkData().naive) * 100)"></div>
+                      </div>
+                    </div>
+
+                    <!-- Line 3: KMP (Fastest exact) -->
+                    <div class="space-y-1">
+                      <div class="flex justify-between font-mono text-[10px]">
+                        <span class="text-slate-600">Exact Word Scan Tracker</span>
+                        <span class="text-emerald-600 font-bold">{{ benchmarkData().kmp }} ms</span>
+                      </div>
+                      <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-emerald-400 h-full rounded-full" [style.width.%]="Math.min(100, (benchmarkData().kmp / benchmarkData().naive) * 100)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+                   <!-- DEEP WEB GROUNDING SOURCE AUDITS -->
+              @if (webScanResult()) {
+                <div class="p-6 bg-white rounded-2xl border border-slate-200 space-y-4 shadow-xs" id="web-audit-pane">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-650 flex items-center justify-center font-bold">
+                      <mat-icon>language</mat-icon>
+                    </div>
+                    <div>
+                      <h3 class="font-bold text-slate-800">AI Web Search Matching</h3>
+                      <p class="text-xs text-slate-500">Real-time web matches and source links found online through Google Gemini.</p>
+                    </div>
+                  </div>
+ 
+                  <!-- Summary Box -->
+                  <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60 grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-1 border-b md:border-b-0 md:border-r border-slate-200 pb-3 md:pb-0 md:pr-4 flex flex-col justify-center">
+                      <span class="text-[10px] text-slate-500 font-mono font-bold">WEB MATCH LEVEL</span>
+                      <p class="text-xl font-extrabold mt-1" 
+                         [ngClass]="webScanResult()!.probability > 40 ? 'text-rose-600' : 'text-emerald-650'">
+                        {{ webScanResult()?.verdict }} ({{ webScanResult()?.probability }}%)
+                      </p>
+                    </div>
+                    <div class="md:col-span-3">
+                      <span class="text-[10px] text-slate-500 font-mono font-bold">SCAN SUMMARY</span>
+                      <p class="text-xs text-slate-705 leading-relaxed mt-1 font-medium">{{ webScanResult()?.summary }}</p>
+                      @if (webScanResult()?.paraphrasedObservation) {
+                        <p class="text-[11px] text-indigo-700 italic mt-1.5"><strong>Analysis of edits:</strong> {{ webScanResult()?.paraphrasedObservation }}</p>
+                      }
+                    </div>
+                  </div>
+ 
+                  <!-- Web Links Identified -->
+                  <div>
+                    <h4 class="text-xs font-mono font-bold text-slate-500 mb-2">FOUND WEB MATCHES:</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      @for (cite of webScanResult()?.suggestedAttributes; track cite.url) {
+                        <div class="p-4 bg-white rounded-xl border border-slate-150 space-y-2 hover:shadow-xs transition">
+                          <div class="flex justify-between items-start gap-2">
+                            <span class="text-xs font-bold text-indigo-650 truncate pr-1" title="{{ cite.sourceName }}">{{ cite.sourceName }}</span>
+                            <a [href]="cite.url" target="_blank" class="cursor-pointer text-indigo-650 hover:text-indigo-750 font-bold text-[10px] hover:underline flex items-center shrink-0">
+                              <span>VISIT SOURCE</span>
+                              <mat-icon class="text-[11px] h-3 w-3 ml-0.5">open_in_new</mat-icon>
+                            </a>
+                          </div>
+                          <p class="text-xs text-slate-500 italic leading-relaxed">"{{ cite.excerptMatch }}"</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+              <!-- SENTENCE HIGHLIGHTER SIDE-BY-SIDE PANELS -->
+              <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs animate-fadeIn" id="sentence-highlighter">
+                
+                <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div>
+                    <h3 class="font-bold flex items-center gap-2 text-slate-800">
+                      <mat-icon class="text-indigo-650">highlight</mat-icon>
+                      <span>Side-by-Side Highlight Matcher</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Interactive line comparison. Select highlighted segments below to view matches and see similarity stats in parallel.</p>
+                  </div>
+                  
+                  <!-- Toggle control for view types -->
+                  <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
+                    <button 
+                      type="button"
+                      (click)="comparisonViewMode.set('flow')"
+                      [class]="comparisonViewMode() === 'flow' ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/50 font-bold' : 'text-slate-600 hover:text-slate-900 font-semibold'"
+                      class="cursor-pointer text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                      <mat-icon class="text-sm">compare</mat-icon>
+                      <span>Full Flow Side-by-Side</span>
+                    </button>
+                    <button 
+                      type="button"
+                      (click)="comparisonViewMode.set('sentences')"
+                      [class]="comparisonViewMode() === 'sentences' ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/50 font-bold' : 'text-slate-600 hover:text-slate-900 font-semibold'"
+                      class="cursor-pointer text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                      <mat-icon class="text-sm">list_alt</mat-icon>
+                      <span>Interactive Sentences</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Custom Algorithm Transparency Legend -->
+                <div class="px-5 py-3.5 bg-slate-50/70 border-b border-slate-150 grid grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50 leading-snug">
+                  <div class="flex items-start gap-2.5 p-2 bg-white rounded-xl border border-slate-200/60 shadow-xxs">
+                    <span class="shrink-0 w-3 h-3 rounded-full bg-violet-400 mt-0.5" title="KMP color map"></span>
+                    <div>
+                      <span class="font-bold text-[10px] text-slate-800 block leading-none">Exact Word Match</span>
+                      <span class="text-[9px] text-slate-500 block mt-0.5 leading-tight">Highlights words that are 100% identical.</span>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2.5 p-2 bg-white rounded-xl border border-slate-200/60 shadow-xxs">
+                    <span class="shrink-0 w-3 h-3 rounded-full bg-amber-400 mt-0.5" title="Rabin-Karp color map"></span>
+                    <div>
+                      <span class="font-bold text-[10px] text-slate-800 block leading-none">Phrase Sequence Match</span>
+                      <span class="text-[9px] text-slate-500 block mt-0.5 leading-tight">Highlights copied structured clauses or sequence flow.</span>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2.5 p-2 bg-white rounded-xl border border-slate-200/60 shadow-xxs">
+                    <span class="shrink-0 w-3 h-3 rounded-full bg-emerald-400 mt-0.5" title="Winnowing color map"></span>
+                    <div>
+                      <span class="font-bold text-[10px] text-slate-800 block leading-none">Paraphrased Section</span>
+                      <span class="text-[9px] text-slate-500 block mt-0.5 leading-tight">Highlights rearranged words or edited sentence structures.</span>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2.5 p-2 bg-white rounded-xl border border-slate-200/60 shadow-xxs">
+                    <span class="shrink-0 w-3 h-3 rounded-full bg-rose-400 mt-0.5" title="Direct color map"></span>
+                    <div>
+                      <span class="font-bold text-[10px] text-slate-800 block leading-none">Document Overlap</span>
+                      <span class="text-[9px] text-slate-500 block mt-0.5 leading-tight">Highlights similar paragraphs and matching text themes.</span>
+                    </div>
+                  </div>
+                </div>
+ 
+                <div class="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-150 min-h-[300px]" id="highlighter-workspace">
+                  
+                  @if (comparisonViewMode() === 'flow') {
+                    <!-- Full Flow Side-by-Side inline document highlighting -->
+                    <div class="lg:col-span-6 p-5 space-y-3 max-h-[450px] overflow-y-auto leading-relaxed bg-white prose" id="submitted-flow-pane">
+                      <div class="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
+                        <span class="text-[10px] font-mono font-bold text-slate-500 uppercase flex items-center gap-1">
+                          <mat-icon class="text-sm">sticky_note_2</mat-icon>
+                          <span>Full Submitted Document Flow</span>
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-mono tracking-wider font-semibold bg-slate-50 border px-1.5 py-0.5 rounded">AUDITED TEXT</span>
+                      </div>
+                      
+                      <div class="text-xs text-slate-700 leading-relaxed font-normal mt-2 select-text whitespace-pre-wrap">
+                        @for (segment of submittedFlowSegments(); track $index) {
+                          @if (segment.matched) {
+                            <span 
+                              [class]="getSegmentClass(segment)" 
+                              [title]="getSegmentTitle(segment)"
+                              role="button"
+                              tabindex="0"
+                              (click)="selectedSentenceIndex.set(segment.sentenceIndex)"
+                              (keydown.enter)="selectedSentenceIndex.set(segment.sentenceIndex)">
+                              {{ segment.text }}&nbsp;
+                            </span>
+                          } @else {
+                            <span class="text-slate-600 dark:text-slate-430">&nbsp;{{ segment.text }}</span>
+                          }
+                        } @empty {
+                          <p class="text-center py-12 text-slate-400 text-xs">No active scan analyzed text mapped.</p>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="lg:col-span-6 p-5 space-y-3 max-h-[450px] overflow-y-auto leading-relaxed bg-slate-50/25 prose" id="original-flow-pane">
+                      <div class="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
+                        <span class="text-[10px] font-mono font-bold text-slate-500 uppercase flex items-center gap-1">
+                          <mat-icon class="text-sm">policy</mat-icon>
+                          <span>Original Reference Flow</span>
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-mono tracking-wider font-semibold bg-white border px-1.5 py-0.5 rounded truncate max-w-[150px]" [title]="comparedDocTitle()">
+                          {{ comparedDocTitle() }}
+                        </span>
+                      </div>
+
+                      <div class="text-xs text-slate-700 leading-relaxed font-normal mt-2 select-text whitespace-pre-wrap">
+                        @for (segment of originalFlowSegments(); track $index) {
+                          @if (segment.matched) {
+                            <span 
+                              [class]="getSegmentClass(segment)" 
+                              [title]="getSegmentTitle(segment)"
+                              role="button"
+                              tabindex="0"
+                              (click)="selectedSentenceIndex.set(segment.sentenceIndex)"
+                              (keydown.enter)="selectedSentenceIndex.set(segment.sentenceIndex)">
+                              {{ segment.text }}&nbsp;
+                            </span>
+                          } @else {
+                            <span class="text-slate-500">&nbsp;{{ segment.text }}</span>
+                          }
+                        } @empty {
+                          <p class="text-center py-12 text-slate-400 text-xs">No reference document loaded.</p>
+                        }
+                      </div>
+                    </div>
+                  } @else {
+                    <!-- Left Grid (Col-Span-7): Audited Document highlights -->
+                    <div class="lg:col-span-7 p-5 space-y-3 max-h-[450px] overflow-y-auto leading-relaxed bg-white" id="submitted-highlights-box">
+                      <h4 class="text-xs uppercase font-extrabold text-slate-500 tracking-wider">Submitted Document Sentences:</h4>
+                      
+                      <div class="space-y-2.5">
+                        @for (item of scanResult()?.sentences; track item.sentenceNumber; let idx = $index) {
+                          <button 
+                            type="button"
+                            (click)="selectedSentenceIndex.set(idx)"
+                            [class]="selectedSentenceIndex() === idx ? 'w-full text-left block p-3 rounded-lg bg-indigo-50/70 border-l-4 border-indigo-655 transition duration-150 shadow-xs relative text-slate-800 font-medium' : 'w-full text-left block p-2.5 rounded-lg border-l-4 border-slate-200 hover:bg-slate-50 transition duration-150 relative text-slate-700'"
+                            class="group font-normal cursor-pointer">
+                            
+                            <div class="flex items-center gap-2 text-[10px] font-mono text-slate-500 mb-1">
+                              <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-bold border border-slate-200/50">Line #{{ item.sentenceNumber }}</span>
+                              <span class="font-bold uppercase" 
+                                 [ngClass]="item.similarity === 100 ? 'text-rose-650' : 'text-amber-600'">
+                                {{ item.algorithm }} Match - {{ item.similarity }}% Match
+                              </span>
+                            </div>
+                            
+                            <p class="text-xs text-slate-800 font-medium font-mono leading-relaxed group-hover:text-indigo-650">
+                              "{{ item.submittedText }}"
+                            </p>
+                            
+                          </button>
+                        } @empty {
+                          <div class="text-center py-12 text-slate-400 font-semibold text-xs">
+                            No exact or paraphrased phrase matches found. Entire document composition is completely original!
+                          </div>
+                        }
+                      </div>
+                    </div>
+   
+                    <!-- Right Grid (Col-Span-5): Visual Side-by-side details -->
+                    <div class="lg:col-span-5 p-5 bg-slate-50/50 max-h-[450px] overflow-y-auto" id="original-mapping-box">
+                    <h4 class="text-xs uppercase font-extrabold text-slate-500 tracking-wider mb-3">Detailed Match Breakdown:</h4>
+                    
+                    @if (selectedSentenceIndex() === null) {
+                      <div class="h-full flex flex-col items-center justify-center text-center py-16 text-slate-500 px-6">
+                        <mat-icon class="text-3xl text-slate-350">center_focus_strong</mat-icon>
+                        <p class="text-xs font-bold text-slate-700 mt-2">No selected line</p>
+                        <p class="text-[10px] text-slate-500 mt-1 leading-relaxed">Select any highlighted sentence on the left to view its source match, similarity details, and character-level comparisons here.</p>
+                      </div>
+                    } @else {
+                      @let activeMatch = scanResult()!.sentences[selectedSentenceIndex()!];
+                      <div class="space-y-4">
+                        
+                        <!-- Header panel stats -->
+                        <div class="bg-white border border-slate-250 p-4 rounded-xl space-y-2 shadow-xs">
+                          <p class="text-[10px] font-mono text-slate-550 uppercase tracking-widest font-bold text-center">SIMILARITY DETAILS</p>
+                          <div class="grid grid-cols-2 gap-2 text-center pt-1.5">
+                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                              <span class="text-[9px] text-slate-400 font-mono font-semibold">Match Score</span>
+                              <p class="font-extrabold text-sm" [ngClass]="activeMatch.similarity === 100 ? 'text-rose-650' : 'text-amber-600'">
+                                {{ activeMatch.similarity }}%
+                              </p>
+                            </div>
+                            <div class="type-badge bg-slate-50 p-2 rounded-lg border border-slate-100">
+                              <span class="text-[9px] text-slate-400 font-mono font-semibold">Matching Type</span>
+                              <p class="font-extrabold text-sm text-slate-700">{{ activeMatch.algorithm }}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Source details mapping -->
+                        <div class="space-y-1">
+                          <h5 class="text-xs font-mono font-bold text-slate-550 uppercase">Original Reference Quote:</h5>
+                          <div class="p-3 bg-white rounded-xl border border-slate-200 font-mono text-xs leading-relaxed italic text-indigo-700 shadow-xs">
+                            "{{ activeMatch.matchedText }}"
+                          </div>
+                                       <!-- Technical Coordinates metadata -->
+                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-205 space-y-2 text-xs font-mono">
+                          <h5 class="text-[10px] font-bold text-slate-500 uppercase">Technical Match Analysis:</h5>
+                          <div class="space-y-1.5">
+                            <p class="flex justify-between border-b border-slate-100 pb-1 text-[11px]">
+                              <span class="text-slate-500">Source Document:</span>
+                              <span class="text-slate-700 font-semibold truncate max-w-[150px] inline-block" title="{{ activeMatch.originalName }}">{{ activeMatch.originalName }}</span>
+                            </p>
+                            <p class="flex justify-between border-b border-slate-100 pb-1 text-[11px]">
+                              <span class="text-slate-500">Character Match Index:</span>
+                              <span class="text-slate-700 font-bold">Char Offset: {{ activeMatch.matchIndex }}</span>
+                            </p>
+                            <p class="flex justify-between border-b border-slate-100 pb-1 text-[11px]">
+                              <span class="text-slate-500">Match Classification:</span>
+                              <span class="text-emerald-700 font-semibold">Phrase Segment</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+ 
+                        <div class="text-[10px] text-slate-500 bg-slate-55 p-2.5 rounded border border-slate-200">
+                          <strong>Note:</strong> Matches are mapped dynamically by analyzing character offsets,phrase sequences, and style similarity thresholds.
+                        </div>
+
+                      </div>
+                    }
+
+                  </div>
+
+                }
+                </div>
+
+              </div>
+
+            </div>
+          }
+
+        </section>
+      }
+
+      <!-- ========================================== -->
+      <!-- TAB 4: BULK SCAN QUEUE -->
+      <!-- ========================================== -->
+      @if (activeTab() === 'bulk') {
+        <section class="space-y-6" id="bulk-upload-desk">
+          
+          <!-- Heading -->
+          <div class="flex justify-between items-center pb-4 border-b border-slate-205">
+            <div>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-800">Bulk Upload Queue</h2>
+              <p class="text-xs text-slate-500">Simultaneous batch checking of academic essays. Supports multiple .txt, .pdf and .docx attachments.</p>
+            </div>
+            
+            @if (bulkFiles().length > 0) {
+              <button 
+                (click)="clearBulk()" 
+                [disabled]="isBulkScanning()"
+                class="cursor-pointer bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 text-xs font-semibold rounded-xl border border-rose-200 transition disabled:opacity-50 shadow-xs">
+                Flush Files
+              </button>
+            }
+          </div>
+ 
+          <!-- Drag and Drop space wrapper -->
+          <div 
+            (drop)="onFileDropped($event)"
+            (dragover)="onDragOver($event)"
+            class="border-2 border-dashed border-slate-300 hover:border-indigo-500/60 bg-white rounded-3xl p-8 text-center transition flex flex-col items-center justify-center cursor-pointer relative shadow-xs"
+            id="drag-drop-bulk">
+            <input 
+              type="file" 
+              (change)="onFileSelected($event)" 
+              multiple 
+              accept=".txt,.pdf,.docx"
+              class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+            <div class="w-16 h-16 rounded-full bg-indigo-50 text-indigo-650 flex items-center justify-center mb-4 font-bold">
+              <mat-icon class="text-3xl">upload_file</mat-icon>
+            </div>
+            <h3 class="font-bold text-lg text-slate-800">Drag and drop institutional documents here</h3>
+            <p class="text-slate-500 text-xs mt-1 max-w-md font-semibold">Accepts multiple academic drafts of .txt format. Auto-simulates translation and extract schemas of PDF and DOCX files securely.</p>
+            <span class="inline-block mt-4 bg-indigo-650 hover:bg-indigo-750 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-xs">
+              Select Audited Submissions
+            </span>
+          </div>
+ 
+          <!-- Batch Queue Table List -->
+          @if (bulkFiles().length > 0) {
+            <div class="bg-white rounded-2xl border border-slate-205 overflow-hidden shadow-xs">
+              <div class="p-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+                <span class="text-xs font-mono font-bold text-slate-500">BATCH METRIC DIRECTORY ({{ bulkFiles().length }} Files)</span>
+                
+                <button 
+                  (click)="runBulkScans()" 
+                  [disabled]="isBulkScanning()"
+                  class="cursor-pointer bg-gradient-to-r from-indigo-650 to-indigo-850 hover:from-indigo-700 hover:to-indigo-900 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-xs disabled:opacity-40 flex items-center gap-1.5 transition">
+                  @if (isBulkScanning()) {
+                    <div class="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    <span>Processing Index...</span>
+                  } @else {
+                    <mat-icon class="text-sm">play_arrow</mat-icon>
+                    <span>Run Plagiarism Batch</span>
+                  }
+                </button>
+              </div>
+ 
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs font-sans">
+                  <thead class="bg-slate-50 text-slate-500 font-bold font-mono border-b border-slate-200 text-[10px]">
+                    <tr>
+                      <th class="p-4">Submission Document Name</th>
+                      <th class="p-4">File Dimensions</th>
+                      <th class="p-4">Queue Position Status</th>
+                      <th class="p-4">Similarity Score (%)</th>
+                      <th class="p-4">Operational Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-150">
+                    @for (file of bulkFiles(); track file.id) {
+                      <tr class="hover:bg-slate-50/50 transition">
+                        <!-- Name & Category -->
+                        <td class="p-4 font-semibold text-slate-800">
+                          <div class="flex items-center gap-2">
+                            <mat-icon class="text-indigo-650 text-lg">insert_drive_file</mat-icon>
+                            <span>{{ file.name }}</span>
+                          </div>
+                        </td>
+                        <!-- Size -->
+                        <td class="p-4 font-mono text-slate-500">{{ file.size }}</td>
+                        <!-- Status Badge -->
+                        <td class="p-4">
+                          @if (file.status === 'Ready') {
+                            <span class="bg-slate-100 text-slate-650 font-bold px-2.5 py-1 rounded border border-slate-205/50 uppercase font-mono text-[9px]">Ready</span>
+                          } @else if (file.status === 'Scanning') {
+                            <span class="bg-indigo-50 text-indigo-700 font-extrabold px-2.5 py-1 rounded border border-indigo-100 uppercase font-mono text-[9px] animate-pulse">Scanning...</span>
+                          } @else if (file.status === 'Done') {
+                            <span class="bg-emerald-50 text-emerald-700 font-extrabold px-2.5 py-1 rounded border border-emerald-100 uppercase font-mono text-[9px]">Checked</span>
+                          } @else {
+                            <span class="bg-rose-50 text-rose-700 font-extrabold px-2.5 py-1 rounded border border-rose-150 uppercase font-mono text-[9px]">Failed</span>
+                          }
+                        </td>
+                        <!-- Metrics -->
+                        <td class="p-4 font-mono font-extrabold">
+                          @if (file.score !== null) {
+                            <span 
+                              [ngClass]="file.score > 40 ? 'text-rose-600' : file.score > 15 ? 'text-amber-600' : 'text-emerald-650'"
+                              class="text-sm">
+                              {{ file.score }}%
+                            </span>
+                          } @else {
+                            <span class="text-slate-400">--</span>
+                          }
+                        </td>
+                        <!-- Action -->
+                        <td class="p-4">
+                          @if (file.status === 'Done' && file.report) {
+                            <button 
+                              (click)="scanResult.set(file.report); activeTab.set('analysis')"
+                              class="cursor-pointer text-indigo-650 hover:text-indigo-850 font-bold text-[11px] hover:underline">
+                              View Report
+                            </button>
+                          } @else {
+                            <span class="text-slate-400 font-mono font-semibold">Pending</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+ 
+        </section>
+      }
+
+      <!-- ========================================== -->
+      <!-- TAB 5: CENTRAL INDEX REPOSITORY DATABASE -->
+      <!-- ========================================== -->
+      @if (activeTab() === 'repository') {
+        <section class="space-y-6" id="index-repository-desk">
+          
+          <!-- Heading -->
+          <div class="pb-4 border-b border-neutral-800">
+            <h2 class="text-2xl font-bold tracking-tight">Institutional Reference Materials Database</h2>
+            <p class="text-xs text-neutral-400">Settle reference textbooks or publications into the index catalog to compare student submissions against.</p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8" id="repo-management-workspace">
+            
+            <!-- Left Side (Col-Span-5): Index Form -->
+            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 flex flex-col justify-between shadow-xs" id="add-textbook-pane">
+              <h3 class="font-bold text-sm mb-4 flex items-center gap-2 text-slate-800">
+                <mat-icon class="text-indigo-650">add_to_photos</mat-icon>
+                <span>Index New Reference Document</span>
+              </h3>
+
+              <form [formGroup]="repoForm" (ngSubmit)="submitToRepository()" class="space-y-4">
+                 <!-- Title Field -->
+                <div class="space-y-1.5 text-xs">
+                  <span class="block font-bold font-mono text-slate-500 uppercase">DOCUMENT TITLE</span>
+                  <input 
+                    type="text" 
+                    formControlName="title"
+                    placeholder="e.g. Classical String Matching and DNA Fingerprints"
+                    class="w-full bg-slate-50 border border-slate-205 px-4 py-2.5 rounded-xl text-slate-800 font-semibold placeholder-slate-400 outline-none focus:border-indigo-650 transition">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <!-- Author Field -->
+                  <div class="space-y-1.5 text-xs">
+                    <span class="block font-bold font-mono text-slate-500 uppercase">CHIEF AUTHOR</span>
+                    <input 
+                      type="text" 
+                      formControlName="author"
+                      placeholder="e.g. Dr. Sarah Jenkins"
+                      class="w-full bg-slate-50 border border-slate-205 px-4 py-2.5 rounded-xl text-slate-800 font-semibold placeholder-slate-400 outline-none focus:border-indigo-650 transition">
+                  </div>
+                  <!-- Category Select -->
+                  <div class="space-y-1.5 text-xs">
+                    <span class="block font-bold font-mono text-slate-500 uppercase">CLASSIFICATION CATEGORY</span>
+                    <select 
+                      formControlName="category"
+                      class="cursor-pointer w-full bg-slate-50 border border-slate-205 px-4 py-2.5 rounded-xl text-slate-800 font-semibold outline-none focus:border-indigo-650 transition">
+                      <option value="Computer Science">Computer Science</option>
+                      <option value="Environmental Science">Environmental Science</option>
+                      <option value="Academic Research">Academic Research</option>
+                      <option value="Physics & Engineering">Physics & Engineering</option>
+                      <option value="Linguistics & History">Linguistics & History</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Textarea Body -->
+                <div class="space-y-1.5 text-xs">
+                  <span class="block font-bold font-mono text-slate-500 uppercase">DOCUMENT CONTENT TEXT BODY (Min 100 characters)</span>
+                  <textarea 
+                    formControlName="content"
+                    placeholder="Write or copy-paste the exact full text paragraphs of the source document here. Our server indexer will harvest character and word fingerprints for the Winnowing algorithm automatically..."
+                    class="w-full h-44 bg-slate-50 border border-slate-205 p-4 rounded-xl text-slate-800 font-mono text-xs outline-none focus:border-indigo-650 resize-none leading-relaxed placeholder-slate-400"></textarea>
+                </div>
+
+                <!-- Messages -->
+                @if (repoError()) {
+                  <div class="p-3 bg-rose-50 border border-rose-300 text-rose-700 rounded-xl text-xs flex items-center gap-2 font-bold animate-pulse">
+                    <mat-icon>error_outline</mat-icon>
+                    <span>{{ repoError() }}</span>
+                  </div>
+                }
+                @if (repoSuccessMessage()) {
+                  <div class="p-3 bg-emerald-50 border border-emerald-300 text-emerald-700 rounded-xl text-xs flex items-center gap-2 font-bold shadow-xs">
+                    <mat-icon>done_all</mat-icon>
+                    <span>{{ repoSuccessMessage() }}</span>
+                  </div>
+                }
+
+                <button 
+                  type="submit" 
+                  [disabled]="repoForm.invalid"
+                  class="cursor-pointer w-full bg-gradient-to-r from-indigo-650 to-indigo-850 hover:from-indigo-700 hover:to-indigo-900 text-white font-bold py-3.5 rounded-xl text-xs transition duration-150 shadow-md disabled:opacity-40 uppercase tracking-wider">
+                  SUBMIT & GENERATE INDEX FINGERPRINTS
+                </button>
+
+              </form>
+            </div>
+
+            <!-- Right Side (Col-Span-7): Repository List -->
+            <div class="lg:col-span-7 bg-white border border-slate-205 rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between" id="view-seedbook-pane">
+              <div class="p-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3">
+                  @if (repositoryList().length > 0) {
+                    <button 
+                      type="button"
+                      (click)="toggleSelectAllRepos()" 
+                      [title]="isAllReposSelected() ? 'Unselect all' : 'Select all'"
+                      class="cursor-pointer p-1.5 rounded-lg border border-slate-250 hover:bg-slate-100 flex items-center justify-center transition"
+                      id="btn-select-all-repos">
+                      <mat-icon class="text-base text-slate-500">
+                        {{ isAllReposSelected() ? 'check_box' : 'check_box_outline_blank' }}
+                      </mat-icon>
+                    </button>
+                  }
+                  <span class="text-xs font-mono font-bold text-slate-500">INDEXED DOCUMENTS REGISTRY ({{ repositoryList().length }})</span>
+                </div>
+
+                @if (selectedRepoCount > 0) {
+                  <button 
+                    type="button"
+                    (click)="deleteSelectedFromRepository()" 
+                    class="cursor-pointer bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 border border-rose-200 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2"
+                    id="btn-batch-delete-repos">
+                    <mat-icon class="text-sm">delete_sweep</mat-icon>
+                    <span>Delete Selected ({{ selectedRepoCount }})</span>
+                  </button>
+                } @else {
+                  <span class="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold px-2.5 py-1 rounded">Active scans benchmark database</span>
+                }
+              </div>
+ 
+              <!-- List with loaders -->
+              <div class="flex-1 divide-y divide-slate-150 min-h-[350px] overflow-y-auto">
+                @if (isLoadingRepo()) {
+                  <div class="h-full flex flex-col items-center justify-center text-center py-24 text-slate-400">
+                    <div class="w-8 h-8 border-2 border-indigo-650/30 border-t-indigo-650 rounded-full animate-spin"></div>
+                    <p class="text-xs mt-3 font-semibold text-slate-500">Loading active repository index from Node server...</p>
+                  </div>
+                } @else {
+                  @for (repo of repositoryList(); track repo.id) {
+                    <div 
+                      tabindex="0"
+                      role="button"
+                      (click)="handleOriginalDocChange(repo.id); activeTab.set('detect')"
+                      (keydown.enter)="handleOriginalDocChange(repo.id); activeTab.set('detect')"
+                      [class.bg-indigo-50\/20]="isRepoSelected(repo.id)"
+                      class="cursor-pointer p-4 hover:bg-slate-50 transition flex flex-row justify-between items-start sm:items-center gap-3 relative group focus:outline-none focus:ring-1 focus:ring-indigo-650">
+                      
+                      <div class="flex items-start gap-3 flex-1 min-w-0 pr-4">
+                        <!-- Custom styled Checkbox -->
+                        <button 
+                          type="button"
+                          (click)="toggleRepoSelection(repo.id, $event)"
+                          class="cursor-pointer shrink-0 mt-0.5 w-5 h-5 rounded-md border border-slate-305 flex items-center justify-center transition"
+                          [class.bg-indigo-600]="isRepoSelected(repo.id)"
+                          [class.border-indigo-600]="isRepoSelected(repo.id)"
+                          [attr.aria-label]="'Select ' + repo.title">
+                          @if (isRepoSelected(repo.id)) {
+                            <mat-icon class="text-[10px] leading-5 h-5 w-5 text-white flex items-center justify-center">check</mat-icon>
+                          }
+                        </button>
+
+                        <div class="space-y-1 min-w-0 flex-1">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="inline-block text-[9px] font-mono font-extrabold uppercase px-1.5 py-0.5 rounded border"
+                               [ngClass]="repo.category === 'Computer Science' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' : 'bg-teal-50 border-teal-100 text-teal-700'">
+                              {{ repo.category }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-mono">{{ repo.date }}</span>
+                          </div>
+                          <h4 class="font-bold text-sm text-slate-800 leading-tight group-hover:text-indigo-650 transition truncate" [title]="repo.title">{{ repo.title }}</h4>
+                          <p class="text-xs text-slate-500 font-medium">By {{ repo.author }} (Words: {{ repo.wordCount }})</p>
+                        </div>
+                      </div>
+ 
+                      <div class="flex shrink-0 items-center justify-end gap-2 text-right">
+                        <!-- Select -->
+                        <span class="text-[10px] font-mono text-slate-400 opacity-0 group-hover:opacity-100 transition pr-2 font-bold">SELECT REFERENCE</span>
+                        <!-- Trash action -->
+                        <button 
+                          (click)="deleteFromRepository(repo.id, $event)"
+                          title="Delete document index"
+                          class="cursor-pointer w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 flex items-center justify-center transition">
+                          <mat-icon class="text-lg">delete_outline</mat-icon>
+                        </button>
+                      </div>
+ 
+                    </div>
+                  } @empty {
+                    <div class="text-center py-20 text-slate-400 font-semibold text-xs">
+                      The comparison index repository is empty. Submit files on the left to index reference works.
+                    </div>
+                  }
+                }
+              </div>
+ 
+              <div class="p-4 border-t border-slate-200 bg-slate-50/50 text-[10px] text-slate-500 font-mono font-semibold">
+                Institutional documents here populate the index scanner. Multi scans runs comparison checks against all of them simultaneously.
+              </div>
+            </div>
+          </div>
+
+        </section>
+      }
+
+      <!-- ========================================== -->
+      <!-- TAB 6: HISTORICAL COMPILATION ARCHIVES -->
+      <!-- ========================================== -->
+      @if (activeTab() === 'reports') {
+        <section class="space-y-6" id="reports-deck-pane">
+          
+          <!-- Heading -->
+          <div class="flex justify-between items-center pb-4 border-b border-slate-205">
+            <div>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-800">Audit Report Archives</h2>
+              <p class="text-xs text-slate-500">Historical trail tracker for past comparative matches recorded in local storage.</p>
+            </div>
+            @if (reportsHistory().length > 0) {
+              <button 
+                (click)="clearHistory()"
+                class="cursor-pointer bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-rose-600 font-bold px-4 py-2 rounded-xl text-xs transition duration-150">
+                Flush Logs
+              </button>
+            }
+          </div>
+
+          <!-- History Table lists -->
+          @if (reportsHistory().length > 0) {
+            <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+              <div class="p-4 border-b border-slate-200 bg-slate-50/50 text-xs font-mono font-bold text-slate-500 text-center uppercase">
+                Academic Integrity Historical Trails Log Database
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-50 font-mono text-slate-500 border-b border-slate-200 text-[10px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="p-4">Submission Name</th>
+                      <th class="p-4">Reference Document Match</th>
+                      <th class="p-4">Audit Datetime</th>
+                      <th class="p-4">Risk Severity</th>
+                      <th class="p-4">Direct Scores (%)</th>
+                      <th class="p-4">Diagnostic Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-150">
+                    @for (item of reportsHistory(); track item.id) {
+                      <tr class="hover:bg-slate-50/50 transition">
+                        <!-- Submission Name -->
+                        <td class="p-4 font-semibold text-slate-800">
+                          <div class="flex items-center gap-2">
+                            <mat-icon class="text-indigo-600">description</mat-icon>
+                            <span>{{ item.title }}</span>
+                          </div>
+                        </td>
+                        <!-- Comparison Source -->
+                        <td class="p-4 text-slate-505 font-medium font-mono text-[11px]">{{ item.sourceChecked }}</td>
+                        <!-- Time -->
+                        <td class="p-4 text-slate-400 font-mono text-[11px]">{{ item.date }}</td>
+                        <!-- Verdict Badge -->
+                        <td class="p-4">
+                          <span 
+                            [ngClass]="item.score > 40 ? 'bg-rose-50 text-rose-700 border border-rose-100' : item.score > 15 ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'"
+                            class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase font-mono">
+                            {{ item.verdict }}
+                          </span>
+                        </td>
+                        <!-- Score -->
+                        <td class="p-4 font-mono font-extrabold text-sm"
+                            [ngClass]="item.score > 40 ? 'text-rose-600' : item.score > 15 ? 'text-amber-600' : 'text-emerald-600'">
+                          {{ item.score }}%
+                        </td>
+                        <!-- Action -->
+                        <td class="p-4">
+                          <button 
+                            (click)="viewPastReport(item)"
+                            class="cursor-pointer text-indigo-650 hover:text-indigo-850 font-bold hover:underline transition">
+                            Load diagnostic
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          } @else {
+            <div class="text-center py-20 bg-white rounded-3xl border border-slate-200 space-y-4 max-w-2xl mx-auto my-8 shadow-xs">
+              <div class="w-16 h-16 rounded-full bg-slate-50 border border-slate-150 flex items-center justify-center mx-auto text-slate-400">
+                <mat-icon class="text-3xl">history_toggle_off</mat-icon>
+              </div>
+              <h3 class="text-lg font-bold text-slate-800">Histories Archive Cleared</h3>
+              <p class="text-slate-500 text-xs px-8">No historical trials have been logged yet. Trigger comparisons inside the document comparer to automatically store secure audit trials.</p>
+              <button (click)="activeTab.set('detect')" class="cursor-pointer bg-indigo-655 hover:bg-indigo-755 text-white font-bold text-xs px-5 py-3 rounded-xl transition duration-150 shadow-xs">
+                Open Comparators Now
+              </button>
+            </div>
+          }
+
+        </section>
+      }
+
+      <!-- ========================================== -->
+      <!-- TAB 1: OVERVIEW -->
+      <!-- ========================================== -->
+      @if (activeTab() === 'overview') {
+        <section class="space-y-8" id="overview-deck">
+          <div class="p-8 rounded-3xl bg-white border border-slate-200/80 bg-gradient-to-br from-white to-slate-100/30 flex flex-col lg:flex-row justify-between items-start gap-6 shadow-sm">
+            <div class="space-y-3">
+              <span class="inline-block text-xs uppercase font-extrabold text-indigo-650 bg-indigo-50 px-3 py-1 rounded-full tracking-wider">Advanced DSA Research Lab</span>
+              <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">Classic String-Matching Meet Paraphrase NLP</h2>
+              <p class="text-slate-600 text-sm md:text-base max-w-2xl leading-relaxed">
+                Welcome to PlagDetect. Traditional engines struggle to spot smart edits, and AI summaries struggle to pinpoint exact word coordinates. 
+                Our pipeline integrates exact linear-time trackers (KMP, Rabin-Karp) with structural local hash minima fingerprinting (Winnowing) 
+                and cosine distribution metrics to capture plagiarism—even if words are shuffled or spaces omitted.
+              </p>
+              <div class="pt-4">
+                <button (click)="activeTab.set('detect')" class="cursor-pointer bg-indigo-600 hover:bg-indigo-550 border-none text-white font-semibold text-sm px-6 py-3 rounded-xl transition duration-150 flex items-center gap-2 shadow-md shadow-indigo-600/10">
+                  <mat-icon>play_circle_outline</mat-icon>
+                  <span>Launch Comparator Console</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="w-full lg:w-72 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-500 space-y-2.5">
+              <h3 class="font-bold text-slate-800">Quick Test Samples</h3>
+              <p>Load these inside the comparator to verify how they score on different criteria:</p>
+              <div class="grid grid-cols-1 gap-2 pt-1.5">
+                <button (click)="loadSample('copied'); activeTab.set('detect')" class="cursor-pointer text-left bg-white hover:bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-[11px] text-rose-600 font-semibold shadow-xs">
+                  📄 Exact Match (KMP / O(N+M))
+                </button>
+                <button (click)="loadSample('paraphrased'); activeTab.set('detect')" class="cursor-pointer text-left bg-white hover:bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-[11px] text-amber-600 font-semibold shadow-xs">
+                  📄 Heavy Paraphrase (Winnowing)
+                </button>
+                <button (click)="loadSample('clean'); activeTab.set('detect')" class="cursor-pointer text-left bg-white hover:bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-[11px] text-emerald-650 font-semibold shadow-xs">
+                  📄 Clean Essay (0% Match)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Algorithm Definitions Grids -->
+          <div>
+            <h3 class="text-xl font-bold mb-4 tracking-tight text-slate-800">Active Matching Pipelines</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              
+              <!-- Card 1: KMP -->
+              <div class="bg-white border border-slate-200 p-6 rounded-2xl space-y-3 hover:border-slate-350 hover:shadow-xs transition">
+                <div class="flex items-center justify-between">
+                  <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                    <mat-icon>font_download</mat-icon>
+                  </div>
+                  <span class="text-xs font-mono font-bold bg-emerald-50 px-2.5 py-1 rounded-md text-emerald-700">O(N + M)</span>
+                </div>
+                <h4 class="font-bold text-slate-800">Knuth-Morris-Pratt (KMP)</h4>
+                <p class="text-slate-505 text-xs leading-relaxed">
+                  Avoids redundancy by pre-computing a state machine of the pattern (LPS table). Skips checked alignments upon failure. Ideal of exact continuous phrases search.
+                </p>
+              </div>
+ 
+              <!-- Card 2: Rabin Karp -->
+              <div class="bg-white border border-slate-200 p-6 rounded-2xl space-y-3 hover:border-slate-350 hover:shadow-xs transition">
+                <div class="flex items-center justify-between">
+                  <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                    <mat-icon>toll</mat-icon>
+                  </div>
+                  <span class="text-xs font-mono font-bold bg-emerald-50 px-2.5 py-1 rounded-md text-emerald-700">O(N + M) avg</span>
+                </div>
+                <h4 class="font-bold text-slate-800">Rabin-Karp Rolling Hashing</h4>
+                <p class="text-slate-505 text-xs leading-relaxed">
+                  Encodes text substrings into modulo integer rolling hashes. Extremely fast for scanning multiple patterns concurrently since shifting hash handles constant $O(1)$ time.
+                </p>
+              </div>
+ 
+              <!-- Card 3: Winnowing -->
+              <div class="bg-white border border-slate-200 p-6 rounded-2xl space-y-3 hover:border-slate-350 hover:shadow-xs transition">
+                <div class="flex items-center justify-between">
+                  <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-650 flex items-center justify-center font-bold">
+                    <mat-icon>view_comfy</mat-icon>
+                  </div>
+                  <span class="text-xs font-mono font-bold bg-indigo-50 px-2.5 py-1 rounded-md text-indigo-700">O(N)</span>
+                </div>
+                <h4 class="font-bold text-slate-800">MOSS Fingerprinting</h4>
+                <p class="text-slate-505 text-xs leading-relaxed">
+                  Sanitizes words, generates hashed character k-grams, and picks mathematical local minima in sliding windows. Identifies matches even with added spaces or adjectives.
+                </p>
+              </div>
+ 
+              <!-- Card 4: Jaccard -->
+              <div class="bg-white border border-slate-200 p-6 rounded-2xl space-y-3 hover:border-slate-350 hover:shadow-xs transition">
+                <div class="flex items-center justify-between">
+                  <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-650 flex items-center justify-center font-bold">
+                    <mat-icon>extension</mat-icon>
+                  </div>
+                  <span class="text-xs font-mono font-bold bg-indigo-50 px-2.5 py-1 rounded-md text-indigo-700">O(N)</span>
+                </div>
+                <h4 class="font-bold text-slate-800">Jaccard Shingle Coef</h4>
+                <p class="text-slate-505 text-xs leading-relaxed">
+                  Breaks comparison documents into continuous word shingles (3-grams) and measures set intersections divided by their union. Gives the general composition resemblance.
+                </p>
+              </div>
+ 
+              <!-- Card 5: Cosine Similarity -->
+              <div class="bg-white border border-slate-200 p-6 rounded-2xl space-y-3 hover:border-slate-350 hover:shadow-xs transition">
+                <div class="flex items-center justify-between">
+                  <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-650 flex items-center justify-center font-bold">
+                    <mat-icon>bubble_chart</mat-icon>
+                  </div>
+                  <span class="text-xs font-mono font-bold bg-indigo-50 px-2.5 py-1 rounded-md text-indigo-700">O(V)</span>
+                </div>
+                <h4 class="font-bold text-slate-800">Cosine Vector Spaces</h4>
+                <p class="text-slate-505 text-xs leading-relaxed">
+                  Maps vocabulary word-frequency counts as multi-dimensional vectors and measures the cosine angle. Flags documents dealing with identical topics even with swapped synonyms.
+                </p>
+              </div>
+ 
+              <!-- Card 6: Levenshtein & LCS -->
+              <div class="bg-white border border-slate-200 p-6 rounded-2xl space-y-3 hover:border-slate-350 hover:shadow-xs transition">
+                <div class="flex items-center justify-between">
+                  <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                    <mat-icon>insights</mat-icon>
+                  </div>
+                  <span class="text-xs font-mono font-bold bg-amber-50 px-2.5 py-1 rounded-md text-amber-700">O(N * M)</span>
+                </div>
+                <h4 class="font-bold text-slate-800">Levenshtein & LCS</h4>
+                <p class="text-slate-505 text-xs leading-relaxed">
+                  Levenshtein measures raw word editing distance ($O(NM)$ DP matrix), while word LCS backtracks key continuous patterns to identify paraphrased sections line-by-line.
+                </p>
+              </div>
+ 
+            </div>
+          </div>
+        </section>
+      }
+
+    </div>
+
+    <!-- Sticky footer metadata credentials -->
+    <footer class="h-12 border-t border-slate-200 bg-white shrink-0 flex items-center justify-between px-6 text-[10px] text-slate-400 font-mono font-bold" id="footer-metadata">
+      <span>PLAGIARISM DETECTOR ENGINE</span>
+      <span>ACADEMIC INTEGRITY PORTAL</span>
+    </footer>
+
+  </main>
+</div>

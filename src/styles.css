@@ -1,0 +1,393 @@
+/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* ==================================================== */
+/* MULTI-THEMING & VISUAL ACCENTS Presets             */
+/* ==================================================== */
+
+/* Light Mode Variables (Default) */
+#plag-workspace {
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-input: #f8fafc;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0; /* slate-200 */
+  --border-input: #cbd5e1;
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+
+  /* Sidebar custom default background */
+  --sidebar-bg: #0f172a;
+  --sidebar-border: #1e293b;
+  --sidebar-text: #ffffff;
+  --sidebar-text-muted: #94a3b8;
+  --sidebar-nav-bg: rgba(255, 255, 255, 0.05);
+
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Mode Variables Override */
+#plag-workspace.theme-mode-dark {
+  --bg-app: #080c14;
+  --bg-card: #0f172a;
+  --bg-card-hover: #1e293b;
+  --bg-input: #0b0f19;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #1e293b;
+  --border-input: #334155;
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+
+  --sidebar-bg: #03050a;
+  --sidebar-border: #0d1321;
+  --sidebar-nav-bg: rgba(255, 255, 255, 0.02);
+}
+
+/* ACCENTS */
+#plag-workspace.theme-accent-indigo {
+  --accent-base: #4f46e5;       /* indigo-600 */
+  --accent-hover: #4338ca;      /* indigo-700 */
+  --accent-light: #e0e7ff;      /* indigo-100 */
+  --accent-light-border: #c5cae9;
+  --accent-text: #4f46e5;
+  --accent-badge-bg: #f5f3ff;
+  --accent-badge-text: #5b21b6;
+  --accent-bg-gradient: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
+}
+#plag-workspace.theme-accent-indigo.theme-mode-dark {
+  --accent-light: rgba(79, 70, 229, 0.15);
+  --accent-light-border: rgba(79, 70, 229, 0.3);
+  --accent-text: #818cf8;       /* indigo-40O */
+  --accent-badge-bg: rgba(79, 70, 229, 0.1);
+  --accent-badge-text: #a5b4fc;
+  --accent-bg-gradient: linear-gradient(135deg, #6366f1 0%, #312e81 100%);
+}
+
+#plag-workspace.theme-accent-emerald {
+  --accent-base: #059669;       /* emerald-600 */
+  --accent-hover: #047857;      /* emerald-700 */
+  --accent-light: #d1fae5;      /* emerald-100 */
+  --accent-light-border: #a7f3d0;
+  --accent-text: #059669;
+  --accent-badge-bg: #ecfdf5;
+  --accent-badge-text: #065f46;
+  --accent-bg-gradient: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+}
+#plag-workspace.theme-accent-emerald.theme-mode-dark {
+  --accent-light: rgba(5, 150, 105, 0.15);
+  --accent-light-border: rgba(5, 150, 105, 0.3);
+  --accent-text: #34d399;       /* emerald-400 */
+  --accent-badge-bg: rgba(5, 150, 105, 0.1);
+  --accent-badge-text: #a7f3d0;
+  --accent-bg-gradient: linear-gradient(135deg, #10b981 0%, #064e3b 100%);
+}
+
+#plag-workspace.theme-accent-violet {
+  --accent-base: #7c3aed;       /* violet-600 */
+  --accent-hover: #6d28d9;      /* violet-700 */
+  --accent-light: #f5f3ff;      /* violet-100 */
+  --accent-light-border: #ddd6fe;
+  --accent-text: #7c3aed;
+  --accent-badge-bg: #faf5ff;
+  --accent-badge-text: #6b21a8;
+  --accent-bg-gradient: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+}
+#plag-workspace.theme-accent-violet.theme-mode-dark {
+  --accent-light: rgba(124, 58, 237, 0.15);
+  --accent-light-border: rgba(124, 58, 237, 0.3);
+  --accent-text: #a78bfa;       /* violet-400 */
+  --accent-badge-bg: rgba(124, 58, 237, 0.1);
+  --accent-badge-text: #ddd6fe;
+  --accent-bg-gradient: linear-gradient(135deg, #8b5cf6 0%, #4c1d95 100%);
+}
+
+#plag-workspace.theme-accent-amber {
+  --accent-base: #d97706;       /* amber-600 */
+  --accent-hover: #b45309;      /* amber-700 */
+  --accent-light: #fef3c7;      /* amber-100 */
+  --accent-light-border: #fde68a;
+  --accent-text: #d97706;
+  --accent-badge-bg: #fffbeb;
+  --accent-badge-text: #92400e;
+  --accent-bg-gradient: linear-gradient(135deg, #d97706 0%, #78350f 100%);
+}
+#plag-workspace.theme-accent-amber.theme-mode-dark {
+  --accent-light: rgba(217, 119, 6, 0.15);
+  --accent-light-border: rgba(217, 119, 6, 0.3);
+  --accent-text: #fbbf24;       /* amber-400 */
+  --accent-badge-bg: rgba(217, 119, 6, 0.1);
+  --accent-badge-text: #fde68a;
+  --accent-bg-gradient: linear-gradient(135deg, #f59e0b 0%, #78350f 100%);
+}
+
+#plag-workspace.theme-accent-rose {
+  --accent-base: #e11d48;       /* rose-600 */
+  --accent-hover: #be123c;      /* rose-700 */
+  --accent-light: #ffe4e6;      /* rose-100 */
+  --accent-light-border: #fecdd3;
+  --accent-text: #e11d48;
+  --accent-badge-bg: #fff1f2;
+  --accent-badge-text: #9f1239;
+  --accent-bg-gradient: linear-gradient(135deg, #e11d48 0%, #881337 100%);
+}
+#plag-workspace.theme-accent-rose.theme-mode-dark {
+  --accent-light: rgba(225, 29, 72, 0.15);
+  --accent-light-border: rgba(225, 29, 72, 0.3);
+  --accent-text: #fb7185;       /* rose-400 */
+  --accent-badge-bg: rgba(225, 29, 72, 0.1);
+  --accent-badge-text: #fecdd3;
+  --accent-bg-gradient: linear-gradient(135deg, #f43f5e 0%, #881337 100%);
+}
+
+/* =================================================== */
+/* SYSTEM ELEM RE-BINDINGS & RULES (Using Variables) */
+/* =================================================== */
+
+/* Root app container and main scrolls */
+#main-scroller {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Sidebar layout overrides */
+#sidebar-panel {
+  background-color: var(--sidebar-bg) !important;
+  border-color: var(--sidebar-border) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#sidebar-panel .border-slate-800,
+#sidebar-panel .border-slate-800\/60 {
+  border-color: var(--sidebar-border) !important;
+}
+
+#sidebar-panel #complexity-guide {
+  background-color: rgba(0, 0, 0, 0.15) !important;
+  border-color: var(--sidebar-border) !important;
+}
+
+#sidebar-panel #complexity-guide .border-slate-800 {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Card overrides (all bg-white in plag workspace) */
+#plag-workspace .bg-white {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: var(--shadow-card) !important;
+  transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+#plag-workspace .border-slate-200,
+#plag-workspace .border-slate-205,
+#plag-workspace .border-slate-150 {
+  border-color: var(--border-color) !important;
+}
+
+#plag-workspace .bg-slate-50,
+#plag-workspace .bg-slate-100,
+#plag-workspace .bg-slate-55,
+#plag-workspace .bg-slate-100\/50,
+#plag-workspace .bg-slate-50\/50 {
+  background-color: var(--bg-input) !important;
+  border-color: var(--border-color) !important;
+  transition: background-color 0.3s;
+}
+
+/* Text Element color corrections */
+#plag-workspace .text-slate-800,
+#plag-workspace .text-slate-900,
+#plag-workspace h2.text-slate-800,
+#plag-workspace h3.text-slate-850,
+#plag-workspace h4.text-slate-800,
+#plag-workspace strong,
+#plag-workspace h1,
+#plag-workspace h2,
+#plag-workspace h3,
+#plag-workspace h4 {
+  color: var(--text-primary) !important;
+}
+
+#plag-workspace .text-slate-600,
+#plag-workspace .text-slate-550,
+#plag-workspace .text-slate-505,
+#plag-workspace .text-slate-500,
+#plag-workspace .text-slate-700,
+#plag-workspace p {
+  color: var(--text-secondary) !important;
+}
+
+#plag-workspace .text-slate-400,
+#plag-workspace .text-slate-450 {
+  color: var(--text-muted) !important;
+}
+
+#plag-workspace .text-slate-300 {
+  color: var(--text-muted) !important;
+  opacity: 0.8;
+}
+
+/* Headers / Footers */
+#header-bar {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+#header-bar span,
+#header-bar a {
+  color: var(--text-secondary) !important;
+}
+#header-bar strong {
+  color: var(--text-primary) !important;
+}
+
+#footer-metadata {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-muted) !important;
+}
+
+/* Forms, inputs, selectors, and textareas */
+#plag-workspace input,
+#plag-workspace select,
+#plag-workspace textarea {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-input) !important;
+  transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+}
+
+#plag-workspace input:focus,
+#plag-workspace select:focus,
+#plag-workspace textarea:focus {
+  border-color: var(--accent-base) !important;
+}
+
+#plag-workspace input::placeholder,
+#plag-workspace textarea::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.6;
+}
+
+/* Active Highlight accent colors */
+#plag-workspace .bg-gradient-to-r.from-indigo-650,
+#plag-workspace .bg-gradient-to-r.from-indigo-600,
+#plag-workspace .bg-indigo-655,
+#plag-workspace .bg-indigo-605,
+#plag-workspace .bg-indigo-600 {
+  background: var(--accent-bg-gradient) !important;
+  border-color: var(--accent-base) !important;
+  color: #ffffff !important;
+}
+
+#plag-workspace .hover\:from-indigo-700:hover,
+#plag-workspace .hover\:bg-indigo-550:hover,
+#plag-workspace .hover\:bg-indigo-755:hover {
+  background: var(--accent-hover) !important;
+}
+
+#plag-workspace .text-indigo-650,
+#plag-workspace .text-indigo-600,
+#plag-workspace .text-indigo-455,
+#plag-workspace .text-indigo-450,
+#plag-workspace .text-indigo-700,
+#plag-workspace .text-indigo-400,
+#plag-workspace mat-icon.text-indigo-650,
+#plag-workspace mat-icon.text-indigo-605,
+#plag-workspace mat-icon.text-indigo-600,
+#plag-workspace mat-icon.text-indigo-800 {
+  color: var(--accent-text) !important;
+}
+
+/* Navigation tabs in the Sidebar */
+#sidebar-panel nav button {
+  color: var(--sidebar-text-muted) !important;
+  border-left-color: transparent !important;
+}
+
+#sidebar-panel nav button:hover {
+  color: var(--sidebar-text) !important;
+  background-color: var(--sidebar-nav-bg) !important;
+}
+
+#sidebar-panel nav button.bg-indigo-600\/15 {
+  background-color: var(--accent-light) !important;
+  border-left-color: var(--accent-base) !important;
+  color: var(--accent-text) !important;
+}
+
+#sidebar-panel nav button.bg-indigo-600\/15 mat-icon {
+  color: var(--accent-text) !important;
+}
+
+/* List registries and item hover states */
+#plag-workspace .hover\:bg-slate-50:hover,
+#plag-workspace .hover\:bg-slate-50\/50:hover {
+  background-color: var(--bg-card-hover) !important;
+}
+
+/* Badge highlights */
+#plag-workspace .bg-indigo-50,
+#plag-workspace .bg-indigo-400\/10,
+#plag-workspace .bg-indigo-500\/10,
+#plag-workspace .bg-indigo-600\/15 {
+  background-color: var(--accent-light) !important;
+  color: var(--accent-text) !important;
+  border-color: var(--accent-light-border) !important;
+}
+
+/* SVG Chart Overlays */
+#plag-workspace polygon.fill-indigo-650\/15 {
+  fill: var(--accent-light) !important;
+  stroke: var(--accent-base) !important;
+  opacity: 0.6;
+}
+
+#plag-workspace polygon {
+  stroke: var(--accent-base) !important;
+}
+
+#plag-workspace .stroke-indigo-650,
+#plag-workspace .stroke-indigo-600 {
+  stroke: var(--accent-base) !important;
+}
+
+/* Dark mode softer badges to safeguard contrast on bad colors */
+#plag-workspace.theme-mode-dark .bg-rose-50,
+#plag-workspace.theme-mode-dark .bg-red-50 {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+  color: #fb7185 !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+#plag-workspace.theme-mode-dark .bg-emerald-50,
+#plag-workspace.theme-mode-dark .bg-green-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+#plag-workspace.theme-mode-dark .bg-amber-50,
+#plag-workspace.theme-mode-dark .bg-yellow-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+#plag-workspace.theme-mode-dark .bg-teal-50 {
+  background-color: rgba(20, 184, 166, 0.15) !important;
+  color: #2dd4bf !important;
+  border-color: rgba(20, 184, 166, 0.3) !important;
+}
